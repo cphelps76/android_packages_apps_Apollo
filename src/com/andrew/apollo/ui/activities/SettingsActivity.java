@@ -59,7 +59,7 @@ public class SettingsActivity extends PreferenceActivity {
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
         // Get the preferences
-        mPreferences = PreferenceUtils.getInstance(this);
+        mPreferences = PreferenceUtils.getInstace(this);
 
         // Initialze the image cache
         mImageCache = ImageCache.getInstance(this);
@@ -70,6 +70,8 @@ public class SettingsActivity extends PreferenceActivity {
         // Add the preferences
         addPreferencesFromResource(R.xml.settings);
 
+        // Date settings
+        initData();
         // Removes the cache entries
         deleteCache();
         // About
@@ -115,6 +117,36 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onStop() {
         super.onStop();
         MusicUtils.notifyForegroundStateChanged(this, false);
+    }
+
+    /**
+     * Initializes the preferences under the "Data" category
+     */
+    private void initData() {
+        // Lockscreen controls
+        toggleLockscreenControls();
+    }
+
+
+    /**
+     * Toggles the lock screen controls
+     */
+    private void toggleLockscreenControls() {
+        final SwitchPreference lockscreenControls = (SwitchPreference) findPreference("lockscreen_controls");
+        lockscreenControls.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+
+            @Override
+            public boolean onPreferenceChange(final Preference preference, final Object newValue) {
+                // Let the service know
+                final Intent updateLockscreen = new Intent(SettingsActivity.this,
+                        MusicPlaybackService.class);
+                updateLockscreen.setAction(MusicPlaybackService.UPDATE_LOCKSCREEN);
+                updateLockscreen
+                        .putExtra(MusicPlaybackService.UPDATE_LOCKSCREEN, (Boolean)newValue);
+                startService(updateLockscreen);
+                return true;
+            }
+        });
     }
 
     /**

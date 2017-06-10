@@ -112,14 +112,6 @@ public class NotificationHelper {
     }
 
     /**
-     * Remove notification
-     */
-    public void killNotification() {
-        mService.stopForeground(true);
-        mNotification = null;
-    }
-
-    /**
      * Changes the playback controls in and out of a paused state
      *
      * @param isPlaying True if music is playing, false otherwise
@@ -196,7 +188,7 @@ public class NotificationHelper {
 
         // Update the play button image
         mNotificationTemplate.setImageViewResource(R.id.notification_base_play,
-                isPlaying ? R.drawable.btn_playback_pause_black : R.drawable.btn_playback_play_black);
+                isPlaying ? R.drawable.btn_playback_play_black : R.drawable.btn_playback_pause_black);
     }
 
     /**

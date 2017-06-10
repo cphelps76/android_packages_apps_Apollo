@@ -16,6 +16,15 @@
 -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <!-- UI catetgory -->
+    <PreferenceCategory android:title="@string/settings_ui_category" >
+
+        <!-- Enable lockscreen controls -->
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="lockscreen_controls"
+            android:title="@string/settings_use_lockscreen_controls" />
+    </PreferenceCategory>
     <!-- Data catetory -->
     <PreferenceCategory android:title="@string/settings_data_category" >
 
@@ -28,12 +37,12 @@
         <!-- Missing artwork -->
         <SwitchPreference
             android:defaultValue="true"
-            android:key="download_missing_artwork"
+            android:key="album_images"
             android:title="@string/settings_download_missing_artwork_title" />
         <!-- Missing artist images -->
         <SwitchPreference
             android:defaultValue="true"
-            android:key="download_missing_artist_images"
+            android:key="artist_images"
             android:title="@string/settings_download_artist_images_title" />
     </PreferenceCategory>
     <!-- Storage catetory -->

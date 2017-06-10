@@ -107,11 +107,9 @@ public class ProfileActivity extends BaseActivity implements OnPageChangeListene
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Temporay until I can work out a nice landscape layout
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Get the preferences
-        mPreferences = PreferenceUtils.getInstance(this);
+        mPreferences = PreferenceUtils.getInstace(this);
 
         // Initialze the image fetcher
         mImageFetcher = ApolloUtils.getImageFetcher(this);
@@ -313,7 +311,7 @@ public class ProfileActivity extends BaseActivity implements OnPageChangeListene
                 // screen. Definitely one of my favorite features.
                 final String name = isArtist() ? mArtistName : mProfileName;
                 final Long id = mArguments.getLong(Config.ID);
-                ApolloUtils.createShortcutIntent(name, mArtistName, id, mType, this);
+                ApolloUtils.createShortcutIntent(name, id, mType, this);
                 return true;
             }
             case R.id.menu_shuffle: {
@@ -397,16 +395,6 @@ public class ProfileActivity extends BaseActivity implements OnPageChangeListene
             case R.id.menu_sort_by_track_list:
                 mPreferences.setAlbumSongSortOrder(SortOrder.AlbumSongSortOrder.SONG_TRACK_LIST);
                 getAlbumSongFragment().refresh();
-                return true;
-            case R.id.menu_sort_by_filename:
-                if(isArtistSongPage()) {
-                    mPreferences.setArtistSortOrder(SortOrder.ArtistSongSortOrder.SONG_FILENAME);
-                    getArtistSongFragment().refresh();
-                }
-                else {
-                    mPreferences.setAlbumSongSortOrder(SortOrder.AlbumSongSortOrder.SONG_FILENAME);
-                    getAlbumSongFragment().refresh();
-                }
                 return true;
             default:
                 break;
@@ -528,7 +516,7 @@ public class ProfileActivity extends BaseActivity implements OnPageChangeListene
                     if (isArtist()) {
                         key = mArtistName;
                     } else if (isAlbum()) {
-                        key = ImageFetcher.generateAlbumCacheKey(mProfileName, mArtistName);
+                        key = mProfileName + Config.ALBUM_ART_SUFFIX;
                     }
 
                     final Bitmap bitmap = ImageFetcher.decodeSampledBitmapFromFile(picturePath);
@@ -583,7 +571,7 @@ public class ProfileActivity extends BaseActivity implements OnPageChangeListene
         // First remove the old image
         removeFromCache();
         // Fetch for the artwork
-        mTabCarousel.fetchAlbumPhoto(this, mProfileName, mArtistName);
+        mTabCarousel.fetchAlbumPhoto(this, mProfileName);
     }
 
     /**
@@ -609,7 +597,7 @@ public class ProfileActivity extends BaseActivity implements OnPageChangeListene
         if (isArtist()) {
             key = mArtistName;
         } else if (isAlbum()) {
-            key = ImageFetcher.generateAlbumCacheKey(mProfileName, mArtistName);
+            key = mProfileName + Config.ALBUM_ART_SUFFIX;
         }
         mImageFetcher.removeFromCache(key);
         // Give the disk cache a little time before requesting a new image.

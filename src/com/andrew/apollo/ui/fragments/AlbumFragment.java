@@ -41,7 +41,6 @@ import com.andrew.apollo.Config;
 import com.andrew.apollo.MusicStateListener;
 import com.andrew.apollo.R;
 import com.andrew.apollo.adapters.AlbumAdapter;
-import com.andrew.apollo.cache.ImageFetcher;
 import com.andrew.apollo.loaders.AlbumLoader;
 import com.andrew.apollo.menu.CreateNewPlaylist;
 import com.andrew.apollo.menu.DeleteDialog;
@@ -245,8 +244,7 @@ public class AlbumFragment extends Fragment implements LoaderCallbacks<List<Albu
                 case FragmentMenuItems.DELETE:
                     mShouldRefresh = true;
                     final String album = mAlbum.mAlbumName;
-                    DeleteDialog.newInstance(album, mAlbumList,
-                            ImageFetcher.generateAlbumCacheKey(album,mAlbum.mArtistName))
+                    DeleteDialog.newInstance(album, mAlbumList, album + Config.ALBUM_ART_SUFFIX)
                             .show(getFragmentManager(), "DeleteDialog");
                     return true;
                 default:
@@ -278,7 +276,7 @@ public class AlbumFragment extends Fragment implements LoaderCallbacks<List<Albu
     public void onItemClick(final AdapterView<?> parent, final View view, final int position,
             final long id) {
         mAlbum = mAdapter.getItem(position);
-        NavUtils.openAlbumProfile(getActivity(), mAlbum.mAlbumName, mAlbum.mArtistName, mAlbum.mAlbumId);
+        NavUtils.openAlbumProfile(getActivity(), mAlbum.mAlbumName, mAlbum.mArtistName);
     }
 
     /**
@@ -454,12 +452,12 @@ public class AlbumFragment extends Fragment implements LoaderCallbacks<List<Albu
     }
 
     private boolean isSimpleLayout() {
-        return PreferenceUtils.getInstance(getActivity()).isSimpleLayout(ALBUM_LAYOUT,
+        return PreferenceUtils.getInstace(getActivity()).isSimpleLayout(ALBUM_LAYOUT,
                 getActivity());
     }
 
     private boolean isDetailedLayout() {
-        return PreferenceUtils.getInstance(getActivity()).isDetailedLayout(ALBUM_LAYOUT,
+        return PreferenceUtils.getInstace(getActivity()).isDetailedLayout(ALBUM_LAYOUT,
                 getActivity());
     }
 }

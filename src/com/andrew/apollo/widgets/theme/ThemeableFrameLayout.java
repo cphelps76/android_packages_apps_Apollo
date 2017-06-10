@@ -41,7 +41,7 @@ public class ThemeableFrameLayout extends FrameLayout {
         // Initialze the theme resources
         final ThemeUtils resources = new ThemeUtils(context);
         // Theme the layout
-        setBackgroundDrawable(resources.getDrawable(BACKGROUND));
+        //setBackgroundDrawable(resources.getDrawable(BACKGROUND));
     }
 
 }

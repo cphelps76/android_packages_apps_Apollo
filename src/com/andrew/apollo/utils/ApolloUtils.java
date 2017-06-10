@@ -71,17 +71,6 @@ public final class ApolloUtils {
     }
 
     /**
-     * Used to determine if the device is running
-     * Jelly Bean MR2 (Android 4.3) or greater
-     *
-     * @return True if the device is running Jelly Bean MR2 or greater,
-     *         false otherwise
-     */
-    public static final boolean hasJellyBeanMR2() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
-    }
-
-    /**
      * Used to determine if the device is a tablet or not
      * 
      * @param context The {@link Context} to use.
@@ -146,7 +135,7 @@ public final class ApolloUtils {
         }
 
         boolean state = false;
-        final boolean onlyOnWifi = PreferenceUtils.getInstance(context).onlyOnWifi();
+        final boolean onlyOnWifi = PreferenceUtils.getInstace(context).onlyOnWifi();
 
         /* Monitor network connections */
         final ConnectivityManager connectivityManager = (ConnectivityManager)context
@@ -287,14 +276,13 @@ public final class ApolloUtils {
      * @param mimeType The MIME type of the shortcut
      * @param context The {@link Context} to use to
      */
-    public static void createShortcutIntent(final String displayName, final String artistName,
-            final Long id, final String mimeType, final Activity context) {
+    public static void createShortcutIntent(final String displayName, final Long id,
+            final String mimeType, final Activity context) {
         try {
             final ImageFetcher fetcher = getImageFetcher(context);
             Bitmap bitmap = null;
             if (mimeType.equals(MediaStore.Audio.Albums.CONTENT_TYPE)) {
-                bitmap = fetcher.getCachedBitmap(
-                        ImageFetcher.generateAlbumCacheKey(displayName, artistName));
+                bitmap = fetcher.getCachedBitmap(displayName + Config.ALBUM_ART_SUFFIX);
             } else {
                 bitmap = fetcher.getCachedBitmap(displayName);
             }
@@ -343,7 +331,7 @@ public final class ApolloUtils {
 
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
-                        PreferenceUtils.getInstance(context).setDefaultThemeColor(
+                        PreferenceUtils.getInstace(context).setDefaultThemeColor(
                                 colorPickerView.getColor());
                     }
                 });

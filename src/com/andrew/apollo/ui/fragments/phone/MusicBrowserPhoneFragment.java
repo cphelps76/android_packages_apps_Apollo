@@ -79,7 +79,7 @@ public class MusicBrowserPhoneFragment extends Fragment implements
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Get the preferences
-        mPreferences = PreferenceUtils.getInstance(getActivity());
+        mPreferences = PreferenceUtils.getInstace(getActivity());
     }
 
     /**
@@ -260,12 +260,6 @@ public class MusicBrowserPhoneFragment extends Fragment implements
                     mPreferences
                             .setArtistSortOrder(SortOrder.ArtistSortOrder.ARTIST_NUMBER_OF_ALBUMS);
                     getArtistFragment().refresh();
-                }
-                return true;
-            case R.id.menu_sort_by_filename:
-                if(isSongPage()) {
-                    mPreferences.setSongSortOrder(SortOrder.SongSortOrder.SONG_FILENAME);
-                    getSongFragment().refresh();
                 }
                 return true;
             case R.id.menu_view_as_simple:

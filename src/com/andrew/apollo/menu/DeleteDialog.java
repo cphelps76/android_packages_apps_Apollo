@@ -33,10 +33,6 @@ import com.andrew.apollo.utils.MusicUtils;
  */
 public class DeleteDialog extends DialogFragment {
 
-    public interface DeleteDialogCallback {
-        public void onDelete(long[] id);
-    }
-
     /**
      * The item(s) to delete
      */
@@ -96,9 +92,6 @@ public class DeleteDialog extends DialogFragment {
                         mFetcher.removeFromCache(key);
                         // Delete the selected item(s)
                         MusicUtils.deleteTracks(getActivity(), mItemList);
-                        if (getActivity() instanceof DeleteDialogCallback) {
-                            ((DeleteDialogCallback)getActivity()).onDelete(mItemList);
-                        }
                         dialog.dismiss();
                     }
                 }).setNegativeButton(R.string.cancel, new OnClickListener() {

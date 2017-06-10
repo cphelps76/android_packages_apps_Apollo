@@ -12,11 +12,11 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
--->
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+ -->
+<resources>
 
     <!-- Main TitlePageIndicator titles -->
-    <string-array name="page_titles" translatable="false">
+    <string-array name="page_titles">
         <item>@string/page_playlists</item>
         <item>@string/page_recent</item>
         <item>@string/page_artists</item>

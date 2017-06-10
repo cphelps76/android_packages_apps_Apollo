@@ -21,7 +21,6 @@ import android.provider.MediaStore;
 
 import com.andrew.apollo.Config;
 import com.andrew.apollo.R;
-import com.andrew.apollo.model.Album;
 import com.andrew.apollo.ui.activities.AudioPlayerActivity;
 import com.andrew.apollo.ui.activities.HomeActivity;
 import com.andrew.apollo.ui.activities.ProfileActivity;
@@ -63,17 +62,16 @@ public final class NavUtils {
      * @param context The {@link Activity} to use.
      * @param albumName The name of the album
      * @param artistName The name of the album artist
-     * @param albumId The id of the album
      */
     public static void openAlbumProfile(final Activity context,
-            final String albumName, final String artistName, final long albumId) {
+            final String albumName, final String artistName) {
 
         // Create a new bundle to transfer the album info
         final Bundle bundle = new Bundle();
-        bundle.putString(Config.ALBUM_YEAR, MusicUtils.getReleaseDateForAlbum(context, albumId));
+        bundle.putString(Config.ALBUM_YEAR, MusicUtils.getReleaseDateForAlbum(context, albumName));
         bundle.putString(Config.ARTIST_NAME, artistName);
         bundle.putString(Config.MIME_TYPE, MediaStore.Audio.Albums.CONTENT_TYPE);
-        bundle.putLong(Config.ID, albumId);
+        bundle.putLong(Config.ID, MusicUtils.getIdForAlbum(context, albumName));
         bundle.putString(Config.NAME, albumName);
 
         // Create the intent to launch the profile activity
@@ -90,7 +88,7 @@ public final class NavUtils {
     public static void openEffectsPanel(final Activity context) {
         try {
             final Intent effects = new Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL);
-            effects.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, MusicUtils.getAudioSessionId());
+            effects.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, MusicUtils.getCurrentAudioId());
             context.startActivity(effects);
         } catch (final ActivityNotFoundException notFound) {
             AppMsg.makeText(context, context.getString(R.string.no_effects_for_you),

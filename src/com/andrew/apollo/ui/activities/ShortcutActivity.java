@@ -115,17 +115,20 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
     public void onServiceConnected(final ComponentName name, final IBinder service) {
         mService = IApolloService.Stub.asInterface(service);
 
-        // Check for a voice query
-        if (mIntent.getAction().equals(Config.PLAY_FROM_SEARCH)) {
-            getSupportLoaderManager().initLoader(0, null, mSongAlbumArtistQuery);
-        } else if (mService != null) {
-            AsyncHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    final String requestedMimeType = mIntent.getExtras().getString(MIME_TYPE);
+        // Don't do anything until the service has been connected
+        AsyncHandler.post(new Runnable() {
 
-                    // First, check the artist MIME type
-                    if (MediaStore.Audio.Artists.CONTENT_TYPE.equals(requestedMimeType)) {
+            @Override
+            public void run() {
+                // Check for a voice query
+                if (mIntent.getAction().equals(Config.PLAY_FROM_SEARCH)) {
+                    getSupportLoaderManager().initLoader(0, null, mSongAlbumArtistQuery);
+                } else
+                // Make sure everthing is good-to-go
+                if (mService != null) {
+
+                    // Frist, check the artist MIME type
+                    if (getType(MediaStore.Audio.Artists.CONTENT_TYPE)) {
 
                         // Shuffle the artist track list
                         mShouldShuffle = true;
@@ -134,7 +137,7 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
                         mList = MusicUtils.getSongListForArtist(ShortcutActivity.this, getId());
                     } else
                     // Second, check the album MIME type
-                    if (MediaStore.Audio.Albums.CONTENT_TYPE.equals(requestedMimeType)) {
+                    if (getType(MediaStore.Audio.Albums.CONTENT_TYPE)) {
 
                         // Shuffle the album track list
                         mShouldShuffle = true;
@@ -143,7 +146,7 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
                         mList = MusicUtils.getSongListForAlbum(ShortcutActivity.this, getId());
                     } else
                     // Third, check the genre MIME type
-                    if (MediaStore.Audio.Genres.CONTENT_TYPE.equals(requestedMimeType)) {
+                    if (getType(MediaStore.Audio.Genres.CONTENT_TYPE)) {
 
                         // Shuffle the genre track list
                         mShouldShuffle = true;
@@ -152,7 +155,7 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
                         mList = MusicUtils.getSongListForGenre(ShortcutActivity.this, getId());
                     } else
                     // Fourth, check the playlist MIME type
-                    if (MediaStore.Audio.Playlists.CONTENT_TYPE.equals(requestedMimeType)) {
+                    if (getType(MediaStore.Audio.Playlists.CONTENT_TYPE)) {
 
                         // Don't shuffle the playlist track list
                         mShouldShuffle = false;
@@ -161,7 +164,7 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
                         mList = MusicUtils.getSongListForPlaylist(ShortcutActivity.this, getId());
                     } else
                     // Check the Favorites playlist
-                    if (getString(R.string.playlist_favorites).equals(requestedMimeType)) {
+                    if (getType(getString(R.string.playlist_favorites))) {
 
                         // Don't shuffle the Favorites track list
                         mShouldShuffle = false;
@@ -170,25 +173,25 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
                         mList = MusicUtils.getSongListForFavorites(ShortcutActivity.this);
                     } else
                     // Check for the Last added playlist
-                    if (getString(R.string.playlist_last_added).equals(requestedMimeType)) {
+                    if (getType(getString(R.string.playlist_last_added))) {
 
                         // Don't shuffle the last added track list
                         mShouldShuffle = false;
 
                         // Get the Last added song list
                         Cursor cursor = LastAddedLoader.makeLastAddedCursor(ShortcutActivity.this);
-                        if (cursor != null) {
-                            mList = MusicUtils.getSongListForCursor(cursor);
-                            cursor.close();
-                        }
+                        mList = MusicUtils.getSongListForCursor(cursor);
+                        cursor.close();
+                        cursor = null;
+
                     }
                     // Finish up
                     allDone();
+                } else {
+                    // TODO Show and error explaining why
                 }
-            });
-        } else {
-            // TODO Show and error explaining why
-        }
+            }
+        });
     }
 
     /**
@@ -295,6 +298,16 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
     };
 
     /**
+     * Used to check the MIME types
+     * 
+     * @param type The MIME type to check
+     * @return True if {@code type} is equal to the MIME type from the intent.
+     */
+    private boolean getType(final String type) {
+        return mIntent.getExtras().getString(MIME_TYPE).equals(type);
+    }
+
+    /**
      * Used to find the Id supplied
      * 
      * @return The Id passed into the activity
@@ -307,18 +320,14 @@ public class ShortcutActivity extends FragmentActivity implements ServiceConnect
      * @return True if the user searched for the favorites playlist
      */
     private boolean isFavorite() {
-        // Check to see if the user spoke the word "Favorites"
         final String favoritePlaylist = getString(R.string.playlist_favorites);
+        // Check to see if the user spoke the word "Favorites"
         if (mVoiceQuery.equals(favoritePlaylist)) {
             return true;
-        }
-
-        // Check to see if the user spoke the word "Favorite"
-        final String favorite = getString(R.string.playlist_favorite);
-        if (mVoiceQuery.equals(favorite)) {
+            // Check to see if the user spoke the word "Favorite"
+        } else if (mVoiceQuery.equals(favoritePlaylist.substring(0, favoritePlaylist.length() - 1))) {
             return true;
         }
-
         return false;
     }
 

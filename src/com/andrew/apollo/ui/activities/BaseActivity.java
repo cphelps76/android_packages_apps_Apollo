@@ -47,6 +47,7 @@ import com.andrew.apollo.utils.NavUtils;
 import com.andrew.apollo.utils.ThemeUtils;
 import com.andrew.apollo.widgets.PlayPauseButtonWhite;
 import com.andrew.apollo.widgets.RepeatButtonWhite;
+import com.andrew.apollo.widgets.ShuffleButton;
 import com.andrew.apollo.widgets.ShuffleButtonWhite;
 
 import java.lang.ref.WeakReference;
@@ -361,7 +362,7 @@ public abstract class BaseActivity extends FragmentActivity implements ServiceCo
         public void onClick(final View v) {
             if (MusicUtils.getCurrentAudioId() != -1) {
                 NavUtils.openAlbumProfile(BaseActivity.this, MusicUtils.getAlbumName(),
-                        MusicUtils.getArtistName(), MusicUtils.getCurrentAlbumId());
+                        MusicUtils.getArtistName());
             } else {
                 MusicUtils.shuffleAll(BaseActivity.this);
             }

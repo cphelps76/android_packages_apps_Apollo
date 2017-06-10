@@ -256,8 +256,7 @@ public class ArtistAlbumFragment extends Fragment implements LoaderCallbacks<Lis
             return;
         }
         mAlbum = mAdapter.getItem(position - 1);
-        NavUtils.openAlbumProfile(getActivity(), mAlbum.mAlbumName,
-                mAlbum.mArtistName, mAlbum.mAlbumId);
+        NavUtils.openAlbumProfile(getActivity(), mAlbum.mAlbumName, mAlbum.mArtistName);
         getActivity().finish();
     }
 

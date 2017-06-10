@@ -25,21 +25,18 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.audiofx.AudioEffect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
-import android.provider.MediaStore.Audio.Playlists;
-import android.provider.MediaStore.Audio.Albums;
-import android.provider.MediaStore.Audio.Artists;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -50,13 +47,16 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
+// tmtmtm
+import android.util.Log;
+import android.net.Uri;
+
 import com.andrew.apollo.IApolloService;
 import com.andrew.apollo.MusicPlaybackService;
 import com.andrew.apollo.R;
 import com.andrew.apollo.adapters.PagerAdapter;
 import com.andrew.apollo.cache.ImageFetcher;
 import com.andrew.apollo.ui.fragments.QueueFragment;
-import com.andrew.apollo.menu.DeleteDialog;
 import com.andrew.apollo.utils.ApolloUtils;
 import com.andrew.apollo.utils.MusicUtils;
 import com.andrew.apollo.utils.MusicUtils.ServiceToken;
@@ -64,9 +64,11 @@ import com.andrew.apollo.utils.NavUtils;
 import com.andrew.apollo.utils.ThemeUtils;
 import com.andrew.apollo.widgets.PlayPauseButton;
 import com.andrew.apollo.widgets.RepeatButton;
+import com.andrew.apollo.widgets.RepeatButtonWhite;
 import com.andrew.apollo.widgets.RepeatingImageButton;
 import com.andrew.apollo.widgets.RepeatingImageButtonWhite;
 import com.andrew.apollo.widgets.ShuffleButton;
+import com.andrew.apollo.widgets.ShuffleButtonWhite;
 
 import java.lang.ref.WeakReference;
 
@@ -76,7 +78,9 @@ import java.lang.ref.WeakReference;
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
 public class AudioPlayerActivity extends FragmentActivity implements ServiceConnection,
-        OnSeekBarChangeListener, DeleteDialog.DeleteDialogCallback {
+        OnSeekBarChangeListener {
+
+    private static final String TAG = "Apollo AudioPlayerActivity";  // tmtmtm
 
     // Message to refresh the time
     private static final int REFRESH_TIME = 1;
@@ -90,8 +94,14 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
     // Repeat button
     private RepeatButton mRepeatButton;
 
+    // Repeat button white
+    private RepeatButtonWhite mRepeatButtonWhite;
+
     // Shuffle button
     private ShuffleButton mShuffleButton;
+
+    // Shuffle button white
+    private ShuffleButtonWhite mShuffleButtonWhite;
 
     // Previous button
     private RepeatingImageButton mPreviousButton;
@@ -159,11 +169,11 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
 
     private long mLastSeekEventTime;
 
-    private long mLastShortSeekEventTime;
-
     private boolean mIsPaused = false;
 
     private boolean mFromTouch = false;
+
+    private String intentDataPath = null;
 
     /**
      * {@inheritDoc}
@@ -205,15 +215,21 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
 
         // Cache all the items
         initPlaybackControls();
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onNewIntent(Intent intent) {
-        setIntent(intent);
-        startPlayback();
+        // tmtmtm
+        Log.i(TAG, "onCreate");  // tmtmtm
+        Intent intent = getIntent();
+        if(intent!=null) {
+            String action = intent.getAction();
+            if(action!=null && action.equals(Intent.ACTION_VIEW)) {
+                Uri intentData = intent.getData();
+                Log.i(TAG, "onCreate Intent.ACTION_VIEW intentData="+intentData);  // tmtmtm
+                if(intentData!=null) {
+                    intentDataPath = intentData.getPath();
+                    // will be played when service becomes available
+                }
+            }
+        }
     }
 
     /**
@@ -222,8 +238,24 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
     @Override
     public void onServiceConnected(final ComponentName name, final IBinder service) {
         mService = IApolloService.Stub.asInterface(service);
-        // Check whether we were asked to start any playback
-        startPlayback();
+        Log.i(TAG, "onServiceConnected mService="+mService);  // tmtmtm
+
+        // tmtmtm: play the song from the VIEW-intent
+        if(intentDataPath!=null) {
+            Log.i(TAG, "onServiceConnected intentDataPath="+intentDataPath);  // tmtmtm
+            if(mService!=null) {
+                try {
+                    mService.openFile(intentDataPath);
+                    // if the user taps on play, the externally selected song will be played back
+                    // todo: unfortunately, the UI will not be updated to show the song title, artist, cover-art etc.
+                } catch(Exception ex) {
+                    Log.e(TAG, "onServiceConnected ex mService.openFile("+intentDataPath+")",ex);  // tmtmtm
+                }
+
+                intentDataPath = null;
+            }
+        }
+
         // Set the playback drawables
         updatePlaybackControls();
         // Current info
@@ -238,6 +270,7 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
     @Override
     public void onServiceDisconnected(final ComponentName name) {
         mService = null;
+        Log.i(TAG, "onServiceDisconnected");  // tmtmtm
     }
 
     /**
@@ -251,17 +284,12 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
         final long now = SystemClock.elapsedRealtime();
         if (now - mLastSeekEventTime > 250) {
             mLastSeekEventTime = now;
-            mLastShortSeekEventTime = now;
             mPosOverride = MusicUtils.duration() * progress / 1000;
             MusicUtils.seek(mPosOverride);
             if (!mFromTouch) {
                 // refreshCurrentTime();
                 mPosOverride = -1;
             }
-        } else if (now - mLastShortSeekEventTime > 5) {
-            mLastShortSeekEventTime = now;
-            mPosOverride = MusicUtils.duration() * progress / 1000;
-            refreshCurrentTimeText(mPosOverride);
         }
     }
 
@@ -272,7 +300,6 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
     public void onStartTrackingTouch(final SeekBar bar) {
         mLastSeekEventTime = 0;
         mFromTouch = true;
-        mCurrentTime.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -280,9 +307,6 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
      */
     @Override
     public void onStopTrackingTouch(final SeekBar bar) {
-        if (mPosOverride != -1) {
-            MusicUtils.seek(mPosOverride);
-        }
         mPosOverride = -1;
         mFromTouch = false;
     }
@@ -383,24 +407,10 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
                 // Settings
                 NavUtils.openSettings(this);
                 return true;
-            case R.id.menu_audio_player_delete:
-                // Delete current song
-                DeleteDialog.newInstance(MusicUtils.getTrackName(), new long[] {
-                    MusicUtils.getCurrentAudioId()
-                }, null).show(getSupportFragmentManager(), "DeleteDialog");
-                return true;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onDelete(long[] ids) {
-        ((QueueFragment)mPagerAdapter.getFragment(0)).refreshQueue();
-        if (MusicUtils.getQueue().length == 0) {
-            NavUtils.goHome(this);
-        }
     }
 
     /**
@@ -568,70 +578,6 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
 
     }
 
-    private long parseIdFromIntent(Intent intent, String longKey,
-        String stringKey, long defaultId) {
-        long id = intent.getLongExtra(longKey, -1);
-        if (id < 0) {
-            String idString = intent.getStringExtra(stringKey);
-            if (idString != null) {
-                try {
-                    id = Long.parseLong(idString);
-                } catch (NumberFormatException e) {
-                    // ignore
-                }
-            }
-        }
-        return id;
-    }
-
-    /**
-     * Checks whether the passed intent contains a playback request,
-     * and starts playback if that's the case
-     */
-    private void startPlayback() {
-        Intent intent = getIntent();
-
-        if (intent == null || mService == null) {
-            return;
-        }
-
-        Uri uri = intent.getData();
-        String mimeType = intent.getType();
-        boolean handled = false;
-
-        if (uri != null && uri.toString().length() > 0) {
-            MusicUtils.playFile(this, uri);
-            handled = true;
-        } else if (Playlists.CONTENT_TYPE.equals(mimeType)) {
-            long id = parseIdFromIntent(intent, "playlistId", "playlist", -1);
-            if (id >= 0) {
-                MusicUtils.playPlaylist(this, id);
-                handled = true;
-            }
-        } else if (Albums.CONTENT_TYPE.equals(mimeType)) {
-            long id = parseIdFromIntent(intent, "albumId", "album", -1);
-            if (id >= 0) {
-                int position = intent.getIntExtra("position", 0);
-                MusicUtils.playAlbum(this, id, position);
-                handled = true;
-            }
-        } else if (Artists.CONTENT_TYPE.equals(mimeType)) {
-            long id = parseIdFromIntent(intent, "artistId", "artist", -1);
-            if (id >= 0) {
-                int position = intent.getIntExtra("position", 0);
-                MusicUtils.playArtist(this, id, position);
-                handled = true;
-            }
-        }
-
-        if (handled) {
-            // Make sure to process intent only once
-            setIntent(new Intent());
-            // Refresh the queue
-            ((QueueFragment)mPagerAdapter.getFragment(0)).refreshQueue();
-        }
-    }
-
     /**
      * Sets the correct drawable states for the playback controls.
      */
@@ -739,10 +685,6 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
         }
     }
 
-    private void refreshCurrentTimeText(final long pos) {
-        mCurrentTime.setText(MusicUtils.makeTimeString(this, pos / 1000));
-    }
-
     /* Used to update the current time string */
     private long refreshCurrentTime() {
         if (mService == null) {
@@ -751,13 +693,11 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
         try {
             final long pos = mPosOverride < 0 ? MusicUtils.position() : mPosOverride;
             if (pos >= 0 && MusicUtils.duration() > 0) {
-                refreshCurrentTimeText(pos);
+                mCurrentTime.setText(MusicUtils.makeTimeString(this, pos / 1000));
                 final int progress = (int)(1000 * pos / MusicUtils.duration());
                 mProgress.setProgress(progress);
 
-                if (mFromTouch) {
-                    return 500;
-                } else if (MusicUtils.isPlaying()) {
+                if (MusicUtils.isPlaying()) {
                     mCurrentTime.setVisibility(View.VISIBLE);
                 } else {
                     // blink the counter
@@ -908,7 +848,7 @@ public class AudioPlayerActivity extends FragmentActivity implements ServiceConn
         @Override
         public void onClick(final View v) {
             NavUtils.openAlbumProfile(AudioPlayerActivity.this, MusicUtils.getAlbumName(),
-                    MusicUtils.getArtistName(), MusicUtils.getCurrentAlbumId());
+                    MusicUtils.getArtistName());
         }
     };
 

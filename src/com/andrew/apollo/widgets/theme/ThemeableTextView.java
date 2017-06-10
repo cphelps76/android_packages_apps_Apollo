@@ -47,10 +47,6 @@ public class ThemeableTextView extends TextView {
         // Get the theme resource name
         final String resourceName = typedArray
                 .getString(R.styleable.ThemeableTextView_themeResource);
-        // Theme the text color
-        if (!TextUtils.isEmpty(resourceName)) {
-            setTextColor(resources.getColor(resourceName));
-        }
         // Recyle the attrs
         typedArray.recycle();
     }

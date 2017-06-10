@@ -38,7 +38,6 @@ import com.andrew.apollo.dragdrop.DragSortListView.RemoveListener;
 import com.andrew.apollo.loaders.NowPlayingCursor;
 import com.andrew.apollo.loaders.QueueLoader;
 import com.andrew.apollo.menu.CreateNewPlaylist;
-import com.andrew.apollo.menu.DeleteDialog;
 import com.andrew.apollo.menu.FragmentMenuItems;
 import com.andrew.apollo.model.Song;
 import com.andrew.apollo.provider.FavoritesStore;
@@ -206,14 +205,14 @@ public class QueueFragment extends Fragment implements LoaderCallbacks<List<Song
         menu.add(GROUP_ID, FragmentMenuItems.PLAY_NEXT, Menu.NONE,
                 getString(R.string.context_menu_play_next));
 
+        // Add the song to the queue
+        menu.add(GROUP_ID, FragmentMenuItems.ADD_TO_QUEUE, Menu.NONE,
+                getString(R.string.add_to_queue));
+
         // Add the song to a playlist
         final SubMenu subMenu = menu.addSubMenu(GROUP_ID, FragmentMenuItems.ADD_TO_PLAYLIST,
                 Menu.NONE, R.string.add_to_playlist);
         MusicUtils.makePlaylistMenu(getActivity(), GROUP_ID, subMenu, true);
-
-        // Remove the song from the queue
-        menu.add(GROUP_ID, FragmentMenuItems.REMOVE_FROM_QUEUE, Menu.NONE,
-                getString(R.string.remove_from_queue));
 
         // View more content by the song artist
         menu.add(GROUP_ID, FragmentMenuItems.MORE_BY_ARTIST, Menu.NONE,
@@ -224,8 +223,8 @@ public class QueueFragment extends Fragment implements LoaderCallbacks<List<Song
                 getString(R.string.context_menu_use_as_ringtone));
 
         // Delete the song
-        menu.add(GROUP_ID, FragmentMenuItems.DELETE, Menu.NONE,
-                getString(R.string.context_menu_delete));
+        // menu.add(GROUP_ID, FragmentMenuItems.DELETE, Menu.NONE,
+        // getString(R.string.context_menu_delete));
     }
 
     /**
@@ -244,11 +243,12 @@ public class QueueFragment extends Fragment implements LoaderCallbacks<List<Song
                     MusicUtils.playNext(new long[] {
                         mSelectedId
                     });
-                    refreshQueue();
+                    getLoaderManager().restartLoader(LOADER, null, this);
                     return true;
-                case FragmentMenuItems.REMOVE_FROM_QUEUE:
-                    MusicUtils.removeTrack(mSelectedId);
-                    refreshQueue();
+                case FragmentMenuItems.ADD_TO_QUEUE:
+                    MusicUtils.addToQueue(getActivity(), new long[] {
+                        mSelectedId
+                    });
                     return true;
                 case FragmentMenuItems.ADD_TO_FAVORITES:
                     FavoritesStore.getInstance(getActivity()).addSongId(
@@ -271,11 +271,8 @@ public class QueueFragment extends Fragment implements LoaderCallbacks<List<Song
                 case FragmentMenuItems.USE_AS_RINGTONE:
                     MusicUtils.setRingtone(getActivity(), mSelectedId);
                     return true;
-                case FragmentMenuItems.DELETE:
-                    DeleteDialog.newInstance(mSong.mSongName, new long[] {
-                        mSelectedId
-                    }, null).show(getFragmentManager(), "DeleteDialog");
-                    return true;
+                    // case FragmentMenuItems.DELETE:
+                    // return true;
                 default:
                     break;
             }

@@ -35,17 +35,17 @@ public class RepeatButton extends ImageButton implements OnClickListener, OnLong
     /**
      * Repeat one theme resource
      */
-    private static final String REPEAT_ALL = "btn_playback_repeat_all_black";
+    private static final String REPEAT_ALL = "btn_playback_repeat_all";
 
     /**
      * Repeat one theme resource
      */
-    private static final String REPEAT_CURRENT = "btn_playback_repeat_one_black";
+    private static final String REPEAT_CURRENT = "btn_playback_repeat_one";
 
     /**
      * Repeat one theme resource
      */
-    private static final String REPEAT_NONE = "btn_playback_repeat_grey";
+    private static final String REPEAT_NONE = "btn_playback_repeat";
 
     /**
      * The resources to use.

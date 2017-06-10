@@ -39,7 +39,6 @@ import com.andrew.apollo.Config;
 import com.andrew.apollo.MusicStateListener;
 import com.andrew.apollo.R;
 import com.andrew.apollo.adapters.AlbumAdapter;
-import com.andrew.apollo.cache.ImageFetcher;
 import com.andrew.apollo.loaders.RecentLoader;
 import com.andrew.apollo.menu.CreateNewPlaylist;
 import com.andrew.apollo.menu.DeleteDialog;
@@ -67,7 +66,7 @@ public class RecentFragment extends Fragment implements LoaderCallbacks<List<Alb
     /**
      * Used to keep context menu items from bleeding into other fragments
      */
-    private static final int GROUP_ID = 1;
+    private static final int GROUP_ID = 3;
 
     /**
      * Grid view column count. ONE - list, TWO - normal grid, FOUR - landscape
@@ -253,8 +252,7 @@ public class RecentFragment extends Fragment implements LoaderCallbacks<List<Alb
                 case FragmentMenuItems.DELETE:
                     mShouldRefresh = true;
                     final String album = mAlbum.mAlbumName;
-                    DeleteDialog.newInstance(album, mAlbumList,
-                            ImageFetcher.generateAlbumCacheKey(album, mAlbum.mArtistName))
+                    DeleteDialog.newInstance(album, mAlbumList, album + Config.ALBUM_ART_SUFFIX)
                             .show(getFragmentManager(), "DeleteDialog");
                     return true;
                 default:
@@ -286,7 +284,7 @@ public class RecentFragment extends Fragment implements LoaderCallbacks<List<Alb
     public void onItemClick(final AdapterView<?> parent, final View view, final int position,
             final long id) {
         mAlbum = mAdapter.getItem(position);
-        NavUtils.openAlbumProfile(getActivity(), mAlbum.mAlbumName, mAlbum.mArtistName, mAlbum.mAlbumId);
+        NavUtils.openAlbumProfile(getActivity(), mAlbum.mAlbumName, mAlbum.mArtistName);
     }
 
     /**
@@ -420,12 +418,12 @@ public class RecentFragment extends Fragment implements LoaderCallbacks<List<Alb
     }
 
     private boolean isSimpleLayout() {
-        return PreferenceUtils.getInstance(getActivity()).isSimpleLayout(RECENT_LAYOUT,
+        return PreferenceUtils.getInstace(getActivity()).isSimpleLayout(RECENT_LAYOUT,
                 getActivity());
     }
 
     private boolean isDetailedLayout() {
-        return PreferenceUtils.getInstance(getActivity()).isDetailedLayout(RECENT_LAYOUT,
+        return PreferenceUtils.getInstace(getActivity()).isDetailedLayout(RECENT_LAYOUT,
                 getActivity());
     }
 }

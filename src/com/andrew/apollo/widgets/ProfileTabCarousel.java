@@ -462,7 +462,7 @@ public class ProfileTabCarousel extends HorizontalScrollView implements OnTouchL
     public void setAlbumProfileHeader(final Activity context,
             final String albumName, final String artistName) {
         mFirstTab.setLabel(getResources().getString(R.string.page_songs));
-        mFirstTab.setAlbumPhoto(context, albumName, artistName);
+        mFirstTab.setAlbumPhoto(context, albumName);
         mFirstTab.blurPhoto(context, artistName, albumName);
         mSecondTab.setVisibility(View.GONE);
         mEnableSwipe = false;
@@ -488,12 +488,10 @@ public class ProfileTabCarousel extends HorizontalScrollView implements OnTouchL
      * Used to fetch for the album art via Last.fm.
      * 
      * @param context The {@link Context} to use.
-     * @param albumName The name of the album in the profile the user is viewing.
-     * @param artistName The name of the album artist in the profile the user is viewing.
+     * @param album The name of the album in the profile the user is viewing.
      */
-    public void fetchAlbumPhoto(final Activity context, final String albumName,
-            final String artistName) {
-        mFirstTab.fetchAlbumPhoto(context, albumName, artistName);
+    public void fetchAlbumPhoto(final Activity context, final String albumName) {
+        mFirstTab.fetchAlbumPhoto(context, albumName);
     }
 
     /**
